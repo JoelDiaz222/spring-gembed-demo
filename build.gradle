@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    systemProperty 'java.library.path', 'jni'
+}
+
+tasks.register('buildJNI', Exec) {
+    workingDir 'jni'
+    commandLine 'make'
+
+    inputs.files(fileTree('jni') {
+        include '*.c', '*.h', 'Makefile'
+    })
+    inputs.dir('gembed/src')
+    outputs.file('jni/libgembed_jni.dylib')
+}
+
+tasks.register('copyJNILib', Copy) {
+    dependsOn 'buildJNI'
+    from 'jni/libgembed_jni.dylib'
+    into 'build/resources/main/native/macos'
+}
+
+tasks.register('cleanJNI', Exec) {
+    workingDir 'jni'
+    commandLine 'make', 'clean'
+}
+
+tasks.named('clean') {
+    dependsOn 'cleanJNI'
+}
+
+tasks.named('compileJava') {
+    dependsOn 'buildJNI'
+}
+
+tasks.named('processResources') {
+    dependsOn 'copyJNILib'
+}
+
+tasks.named('bootRun') {
+    systemProperty 'java.library.path', 'jni'
+}
