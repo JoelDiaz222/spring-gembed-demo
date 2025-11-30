@@ -3,11 +3,52 @@
 #include <string.h>
 
 /*
- * Minimal JNI helper functions for memory management
- * These bridge Java to the existing Rust C FFI
+ * JNI adapter for Gembed Rust library
+ * Bridges Java to the unified Rust C FFI
  */
 
-// Allocate native memory
+// Input type constants (must match Rust library)
+#define INPUT_TYPE_TEXT 0
+#define INPUT_TYPE_IMAGE 1
+#define INPUT_TYPE_MULTIMODAL 2
+
+// Structure definitions matching the Rust C FFI
+typedef struct {
+    const char *ptr;
+    size_t len;
+} StringSlice;
+
+typedef struct {
+    const unsigned char *ptr;
+    size_t len;
+} ByteSlice;
+
+typedef struct {
+    int input_type;
+    const ByteSlice *binary_data;
+    size_t n_binary;
+    const StringSlice *text_data;
+    size_t n_text;
+} InputData;
+
+typedef struct {
+    float *data;
+    size_t n_vectors;
+    size_t dim;
+} EmbeddingBatch;
+
+// Forward declarations for Rust C FFI functions
+extern int validate_embedding_method(const char *method);
+extern int validate_embedding_model(int method_id, const char *model, int input_type);
+extern int generate_embeddings(
+    int method_id,
+    int model_id,
+    const InputData *input_data,
+    EmbeddingBatch *out_batch
+);
+extern void free_embedding_batch(EmbeddingBatch *batch);
+
+// Memory Management Functions
 JNIEXPORT jlong JNICALL
 Java_com_example_embeddings_model_NativeMemory_allocateMemory(
     JNIEnv *env, jclass cls, jlong size)
@@ -20,7 +61,6 @@ Java_com_example_embeddings_model_NativeMemory_allocateMemory(
     return (jlong)ptr;
 }
 
-// Free native memory
 JNIEXPORT void JNICALL
 Java_com_example_embeddings_model_NativeMemory_freeNativeMemory(
     JNIEnv *env, jclass cls, jlong ptr)
@@ -30,7 +70,6 @@ Java_com_example_embeddings_model_NativeMemory_freeNativeMemory(
     }
 }
 
-// Copy Java byte array to native memory
 JNIEXPORT void JNICALL
 Java_com_example_embeddings_model_NativeMemory_copyToNative(
     JNIEnv *env, jclass cls, jlong destPtr, jbyteArray src)
@@ -48,7 +87,6 @@ Java_com_example_embeddings_model_NativeMemory_copyToNative(
     }
 }
 
-// Write a long value to native memory
 JNIEXPORT void JNICALL
 Java_com_example_embeddings_model_NativeMemory_writeLong(
     JNIEnv *env, jclass cls, jlong ptr, jlong value)
@@ -58,7 +96,6 @@ Java_com_example_embeddings_model_NativeMemory_writeLong(
     }
 }
 
-// Read a long value from native memory
 JNIEXPORT jlong JNICALL
 Java_com_example_embeddings_model_NativeMemory_readLong(
     JNIEnv *env, jclass cls, jlong ptr)
@@ -69,7 +106,6 @@ Java_com_example_embeddings_model_NativeMemory_readLong(
     return (jlong)(*((long *)ptr));
 }
 
-// Read float array from native memory
 JNIEXPORT jfloatArray JNICALL
 Java_com_example_embeddings_model_NativeMemory_readFloatArray(
     JNIEnv *env, jclass cls, jlong ptr, jlong count)
@@ -88,20 +124,7 @@ Java_com_example_embeddings_model_NativeMemory_readFloatArray(
     return result;
 }
 
-// Forward declarations for the existing Rust C FFI functions
-extern int validate_embedding_method(const char *method);
-extern int validate_embedding_model(int method_id, const char *model);
-extern int generate_embeddings_from_texts(
-    int method_id,
-    int model_id,
-    const void *inputs,
-    size_t n_inputs,
-    void *out_batch
-);
-extern void free_embedding_batch(void *batch);
-
-// JNI wrappers for existing Rust functions
-
+// Embedding Generation Functions (New API)
 JNIEXPORT jint JNICALL
 Java_com_example_embeddings_service_NativeBridge_validateEmbeddingMethod(
     JNIEnv *env, jclass cls, jstring method)
@@ -135,7 +158,8 @@ Java_com_example_embeddings_service_NativeBridge_validateEmbeddingModel(
         return -1;
     }
 
-    int result = validate_embedding_model((int)methodId, model_str);
+    // Validate for text input type
+    int result = validate_embedding_model((int)methodId, model_str, INPUT_TYPE_TEXT);
 
     (*env)->ReleaseStringUTFChars(env, model, model_str);
 
@@ -153,12 +177,20 @@ Java_com_example_embeddings_service_NativeBridge_generateEmbeddingsFromTexts(
         return -1;
     }
 
-    int result = generate_embeddings_from_texts(
+    // Construct InputData structure for text inputs
+    InputData input_data;
+    input_data.input_type = INPUT_TYPE_TEXT;
+    input_data.binary_data = NULL;
+    input_data.n_binary = 0;
+    input_data.text_data = (const StringSlice *)inputsPtr;
+    input_data.n_text = (size_t)nInputs;
+
+    // Call the unified generate_embeddings function
+    int result = generate_embeddings(
         (int)methodId,
         (int)modelId,
-        (const void *)inputsPtr,
-        (size_t)nInputs,
-        (void *)outBatchPtr
+        &input_data,
+        (EmbeddingBatch *)outBatchPtr
     );
 
     return (jint)result;
@@ -169,6 +201,6 @@ Java_com_example_embeddings_service_NativeBridge_freeEmbeddingBatch(
     JNIEnv *env, jclass cls, jlong batchPtr)
 {
     if (batchPtr != 0) {
-        free_embedding_batch((void *)batchPtr);
+        free_embedding_batch((EmbeddingBatch *)batchPtr);
     }
 }
