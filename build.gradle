@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.3'
+    id 'org.springframework.boot' version '4.0.3'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -17,18 +17,35 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    mockitoAgent
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.postgresql:postgresql'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    testImplementation "org.mockito:mockito-core"
+    mockitoAgent("org.mockito:mockito-core") {
+        transitive = false
+    }
+
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
     systemProperty 'java.library.path', 'jni'
 }
+
+def osName = System.getProperty("os.name").toLowerCase()
+def isMacOs = osName.contains("mac")
+def isWindows = osName.contains("windows")
+def libFileName = isMacOs ? 'libgembed_jni.dylib' : (isWindows ? 'gembed_jni.dll' : 'libgembed_jni.so')
+def osDir = isMacOs ? 'macos' : (isWindows ? 'windows' : 'linux')
 
 tasks.register('buildJNI', Exec) {
     workingDir 'jni'
@@ -38,13 +55,13 @@ tasks.register('buildJNI', Exec) {
         include '*.c', '*.h', 'Makefile'
     })
     inputs.dir('gembed/src')
-    outputs.file('jni/libgembed_jni.dylib')
+    outputs.file("jni/${libFileName}")
 }
 
 tasks.register('copyJNILib', Copy) {
     dependsOn 'buildJNI'
-    from 'jni/libgembed_jni.dylib'
-    into 'build/resources/main/native/macos'
+    from "jni/${libFileName}"
+    into "build/resources/main/native/${osDir}"
 }
 
 tasks.register('cleanJNI', Exec) {

@@ -38,10 +38,10 @@ typedef struct {
 } EmbeddingBatch;
 
 // Forward declarations for Rust C FFI functions
-extern int validate_embedding_method(const char *method);
-extern int validate_embedding_model(int method_id, const char *model, int input_type);
+extern int validate_embedder(const char *name);
+extern int validate_embedding_model(int embedder_id, const char *model, int input_type);
 extern int generate_embeddings(
-    int method_id,
+    int embedder_id,
     int model_id,
     const InputData *input_data,
     EmbeddingBatch *out_batch
@@ -126,21 +126,21 @@ Java_com_example_embeddings_model_NativeMemory_readFloatArray(
 
 // Embedding Generation Functions (New API)
 JNIEXPORT jint JNICALL
-Java_com_example_embeddings_service_NativeBridge_validateEmbeddingMethod(
-    JNIEnv *env, jclass cls, jstring method)
+Java_com_example_embeddings_service_NativeBridge_validateEmbedder(
+    JNIEnv *env, jclass cls, jstring embedder)
 {
-    if (method == NULL) {
+    if (embedder == NULL) {
         return -1;
     }
 
-    const char *method_str = (*env)->GetStringUTFChars(env, method, NULL);
-    if (method_str == NULL) {
+    const char *embedder_str = (*env)->GetStringUTFChars(env, embedder, NULL);
+    if (embedder_str == NULL) {
         return -1;
     }
 
-    int result = validate_embedding_method(method_str);
+    int result = validate_embedder(embedder_str);
 
-    (*env)->ReleaseStringUTFChars(env, method, method_str);
+    (*env)->ReleaseStringUTFChars(env, embedder, embedder_str);
 
     return (jint)result;
 }

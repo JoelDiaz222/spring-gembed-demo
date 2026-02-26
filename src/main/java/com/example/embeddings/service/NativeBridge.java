@@ -11,29 +11,29 @@ public class NativeBridge
     }
 
     /**
-     * Validate an embedding method
+     * Validate an embedder by name
      *
-     * @param method The method name (e.g., "fastembed", "grpc")
-     * @return Method ID (>= 0) if valid, negative value if invalid
+     * @param embedder The embedder name (e.g., "embed_anything", "fastembed")
+     * @return Embedder ID (>= 0) if valid, negative value if invalid
      */
-    public static native int validateEmbeddingMethod(String method);
+    public static native int validateEmbedder(String embedder);
 
     /**
-     * Validate an embedding model for a given method and input type
+     * Validate an embedding model for a given embedder and input type
      * <p>
-     * Note: The native function now requires an input_type parameter.
-     * This Java wrapper currently validates for INPUT_TYPE_TEXT (0) by default.
+     * Note: The native function requires an input_type parameter.
+     * This Java wrapper validates for INPUT_TYPE_TEXT (0) by default.
      *
-     * @param methodId The method ID returned by validateEmbeddingMethod
-     * @param model    The model name/identifier
+     * @param embedderId The embedder ID returned by validateEmbedder
+     * @param model      The model name/identifier
      * @return Model ID (>= 0) if valid, negative value if invalid
      */
-    public static native int validateEmbeddingModel(int methodId, String model);
+    public static native int validateEmbeddingModel(int embedderId, String model);
 
     /**
      * Generate embeddings from text inputs
      *
-     * @param methodId    The method ID
+     * @param embedderId  The embedder ID
      * @param modelId     The model ID
      * @param inputsPtr   Pointer to StringSlice array
      * @param nInputs     Number of input texts
@@ -41,7 +41,7 @@ public class NativeBridge
      * @return 0 on success, non-zero error code on failure
      */
     public static native int generateEmbeddingsFromTexts(
-            int methodId,
+            int embedderId,
             int modelId,
             long inputsPtr,
             int nInputs,

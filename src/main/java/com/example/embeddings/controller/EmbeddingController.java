@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/embed")
 public class EmbeddingController
 {
     private final EmbeddingService embeddingService;
@@ -26,23 +26,23 @@ public class EmbeddingController
      * Example POST request:
      * POST /embed
      * {
-     * "method": "fastembed",
-     * "model": "example-model",
-     * "texts": ["Hello world", "Another text"]
+     * "embedder": "embed_anything",
+     * "model": "sentence-transformers/all-MiniLM-L6-v2",
+     * "texts": ["Hello world"]
      * }
      */
     @PostMapping
     public Map<String, Object> generateEmbeddings(@RequestBody EmbeddingRequest request)
     {
-        float[][] embeddings = embeddingService.embed(request.method(), request.model(), request.texts());
+        float[][] embeddings = embeddingService.embed(request.embedder(), request.model(), request.texts());
 
         return Map.of(
-                "method", request.method(),
+                "embedder", request.embedder(),
                 "model", request.model(),
                 "embeddings", embeddings
         );
     }
 
     // Using a record for the request body
-    public record EmbeddingRequest(String method, String model, List<String> texts) {}
+    public record EmbeddingRequest(String embedder, String model, List<String> texts) {}
 }

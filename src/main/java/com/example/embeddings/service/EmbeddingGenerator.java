@@ -11,32 +11,30 @@ import java.util.List;
  */
 public class EmbeddingGenerator
 {
-    private final String method;
+    private final String embedder;
     private final String model;
-    private final int methodId;
+    private final int embedderId;
     private final int modelId;
 
     /**
-     * Create an embedding generator with specified method and model
+     * Create an embedding generator with specified embedder and model
      *
-     * @param method Either "fastembed" or "remote"
-     * @param model  The model name/identifier
-     * @throws IllegalArgumentException if method or model is invalid
+     * @param embedder The embedder name (e.g., "embed_anything", "fastembed")
+     * @param model    The model name/identifier
+     * @throws IllegalArgumentException if embedder or model is invalid
      */
-    public EmbeddingGenerator(String method, String model)
+    public EmbeddingGenerator(String embedder, String model)
     {
-        this.method = method;
+        this.embedder = embedder;
         this.model = model;
 
-        this.methodId = NativeBridge.validateEmbeddingMethod(method);
-        if (this.methodId < 0)
+        this.embedderId = NativeBridge.validateEmbedder(embedder);
+        if (this.embedderId < 0)
         {
-            throw new IllegalArgumentException(
-                    "Invalid embedding method: " + method + " (use 'fastembed' or 'remote')"
-            );
+            throw new IllegalArgumentException("Invalid embedder: " + embedder);
         }
 
-        this.modelId = NativeBridge.validateEmbeddingModel(this.methodId, model);
+        this.modelId = NativeBridge.validateEmbeddingModel(this.embedderId, model);
         if (this.modelId < 0)
         {
             throw new IllegalArgumentException("Model not allowed: " + model);
@@ -69,7 +67,7 @@ public class EmbeddingGenerator
             {
                 // Call native function
                 final int result = NativeBridge.generateEmbeddingsFromTexts(
-                        methodId,
+                        embedderId,
                         modelId,
                         memory.getStringSlicesPtr(),
                         nInputs,
@@ -111,9 +109,9 @@ public class EmbeddingGenerator
         }
     }
 
-    public String getMethod()
+    public String getEmbedder()
     {
-        return method;
+        return embedder;
     }
 
     public String getModel()

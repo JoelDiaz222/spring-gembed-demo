@@ -7,7 +7,9 @@ build/
 .DS_Store
 fastembed_models/
 jni/jni_adapter.o
+jni/libgembed_jni.so
 jni/libgembed_jni.dylib
+jni/libgembed_jni.dll
 
 ### STS ###
 .apt_generated
