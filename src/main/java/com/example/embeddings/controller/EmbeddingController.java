@@ -26,7 +26,7 @@ public class EmbeddingController
      * Example POST request:
      * POST /embed
      * {
-     * "embedder": "embed_anything",
+     * "backend": "embed_anything",
      * "model": "sentence-transformers/all-MiniLM-L6-v2",
      * "texts": ["Hello world"]
      * }
@@ -34,15 +34,15 @@ public class EmbeddingController
     @PostMapping
     public Map<String, Object> generateEmbeddings(@RequestBody EmbeddingRequest request)
     {
-        float[][] embeddings = embeddingService.embed(request.embedder(), request.model(), request.texts());
+        float[][] embeddings = embeddingService.embed(request.backend(), request.model(), request.texts());
 
         return Map.of(
-                "embedder", request.embedder(),
+                "backend", request.backend(),
                 "model", request.model(),
                 "embeddings", embeddings
         );
     }
 
     // Using a record for the request body
-    public record EmbeddingRequest(String embedder, String model, List<String> texts) {}
+    public record EmbeddingRequest(String backend, String model, List<String> texts) {}
 }

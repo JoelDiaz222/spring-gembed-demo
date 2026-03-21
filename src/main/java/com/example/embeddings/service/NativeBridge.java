@@ -11,29 +11,29 @@ public class NativeBridge
     }
 
     /**
-     * Validate an embedder by name
+     * Validate an backend by name
      *
-     * @param embedder The embedder name (e.g., "embed_anything", "fastembed")
-     * @return Embedder ID (>= 0) if valid, negative value if invalid
+     * @param backend The backend name (e.g., "embed_anything", "fastembed")
+     * @return Backend ID (>= 0) if valid, negative value if invalid
      */
-    public static native int validateEmbedder(String embedder);
+    public static native int validateBackend(String backend);
 
     /**
-     * Validate an embedding model for a given embedder and input type
+     * Validate an embedding model for a given backend and input type
      * <p>
      * Note: The native function requires an input_type parameter.
      * This Java wrapper validates for INPUT_TYPE_TEXT (0) by default.
      *
-     * @param embedderId The embedder ID returned by validateEmbedder
+     * @param backendId The backend ID returned by validateBackend
      * @param model      The model name/identifier
      * @return Model ID (>= 0) if valid, negative value if invalid
      */
-    public static native int validateEmbeddingModel(int embedderId, String model);
+    public static native int validateModel(int backendId, String model);
 
     /**
      * Generate embeddings from text inputs
      *
-     * @param embedderId  The embedder ID
+     * @param backendId  The backend ID
      * @param modelId     The model ID
      * @param inputsPtr   Pointer to StringSlice array
      * @param nInputs     Number of input texts
@@ -41,7 +41,7 @@ public class NativeBridge
      * @return 0 on success, non-zero error code on failure
      */
     public static native int generateEmbeddingsFromTexts(
-            int embedderId,
+            int backendId,
             int modelId,
             long inputsPtr,
             int nInputs,

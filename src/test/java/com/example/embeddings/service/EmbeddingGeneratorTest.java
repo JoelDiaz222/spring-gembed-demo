@@ -11,22 +11,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class EmbeddingGeneratorTest
 {
 
-    private static final String EMBEDDER = "embed_anything";
+    private static final String BACKEND = "embed_anything";
     private static final String MODEL = "sentence-transformers/all-MiniLM-L6-v2";
 
     @Test
-    void testEmbeddingGeneratorValidEmbedderAndModel()
+    void testEmbeddingGeneratorValidBackendAndModel()
     {
         // Arrange & Act
-        final EmbeddingGenerator generator = new EmbeddingGenerator(EMBEDDER, MODEL);
+        final EmbeddingGenerator generator = new EmbeddingGenerator(BACKEND, MODEL);
 
         // Assert
-        assertEquals(EMBEDDER, generator.getEmbedder());
+        assertEquals(BACKEND, generator.getBackend());
         assertEquals(MODEL, generator.getModel());
     }
 
     @Test
-    void testEmbeddingGeneratorInvalidEmbedder()
+    void testEmbeddingGeneratorInvalidBackend()
     {
         // Arrange, Act & Assert
         assertThrows(
@@ -41,7 +41,7 @@ class EmbeddingGeneratorTest
         // Arrange, Act & Assert
         assertThrows(
                 IllegalArgumentException.class, () ->
-                        new EmbeddingGenerator(EMBEDDER, "invalid_model_abc")
+                        new EmbeddingGenerator(BACKEND, "invalid_model_abc")
         );
     }
 
@@ -49,7 +49,7 @@ class EmbeddingGeneratorTest
     void testGenerateEmbeddingsSingle()
     {
         // Arrange
-        final EmbeddingGenerator generator = new EmbeddingGenerator(EMBEDDER, MODEL);
+        final EmbeddingGenerator generator = new EmbeddingGenerator(BACKEND, MODEL);
         final String text = "Hello world";
 
         // Act
@@ -64,7 +64,7 @@ class EmbeddingGeneratorTest
     void testGenerateEmbeddingsBatch()
     {
         // Arrange
-        final EmbeddingGenerator generator = new EmbeddingGenerator(EMBEDDER, MODEL);
+        final EmbeddingGenerator generator = new EmbeddingGenerator(BACKEND, MODEL);
         final List<String> texts = Arrays.asList("Hello world", "Another test string", "And a third one");
 
         // Act
@@ -87,7 +87,7 @@ class EmbeddingGeneratorTest
     void testGenerateEmbeddingsEmptyList()
     {
         // Arrange
-        final EmbeddingGenerator generator = new EmbeddingGenerator(EMBEDDER, MODEL);
+        final EmbeddingGenerator generator = new EmbeddingGenerator(BACKEND, MODEL);
 
         // Act & Assert
         assertThrows(

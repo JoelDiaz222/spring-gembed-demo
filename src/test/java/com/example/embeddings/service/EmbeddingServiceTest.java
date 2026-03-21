@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class EmbeddingServiceTest
 {
 
-    private static final String EMBEDDER = "embed_anything";
+    private static final String BACKEND = "embed_anything";
     private static final String MODEL = "sentence-transformers/all-MiniLM-L6-v2";
 
     @Autowired
@@ -27,7 +27,7 @@ class EmbeddingServiceTest
         final List<String> texts = Arrays.asList("Spring Boot testing", "Integration test example");
 
         // Act
-        final float[][] result = embeddingService.embed(EMBEDDER, MODEL, texts);
+        final float[][] result = embeddingService.embed(BACKEND, MODEL, texts);
 
         // Assert
         assertNotNull(result);

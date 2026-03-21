@@ -11,30 +11,30 @@ import java.util.List;
  */
 public class EmbeddingGenerator
 {
-    private final String embedder;
+    private final String backend;
     private final String model;
-    private final int embedderId;
+    private final int backendId;
     private final int modelId;
 
     /**
-     * Create an embedding generator with specified embedder and model
+     * Create an embedding generator with specified backend and model
      *
-     * @param embedder The embedder name (e.g., "embed_anything", "fastembed")
+     * @param backend The backend name (e.g., "embed_anything", "fastembed")
      * @param model    The model name/identifier
-     * @throws IllegalArgumentException if embedder or model is invalid
+     * @throws IllegalArgumentException if backend or model is invalid
      */
-    public EmbeddingGenerator(String embedder, String model)
+    public EmbeddingGenerator(String backend, String model)
     {
-        this.embedder = embedder;
+        this.backend = backend;
         this.model = model;
 
-        this.embedderId = NativeBridge.validateEmbedder(embedder);
-        if (this.embedderId < 0)
+        this.backendId = NativeBridge.validateBackend(backend);
+        if (this.backendId < 0)
         {
-            throw new IllegalArgumentException("Invalid embedder: " + embedder);
+            throw new IllegalArgumentException("Invalid backend: " + backend);
         }
 
-        this.modelId = NativeBridge.validateEmbeddingModel(this.embedderId, model);
+        this.modelId = NativeBridge.validateModel(this.backendId, model);
         if (this.modelId < 0)
         {
             throw new IllegalArgumentException("Model not allowed: " + model);
@@ -67,7 +67,7 @@ public class EmbeddingGenerator
             {
                 // Call native function
                 final int result = NativeBridge.generateEmbeddingsFromTexts(
-                        embedderId,
+                        backendId,
                         modelId,
                         memory.getStringSlicesPtr(),
                         nInputs,
@@ -109,9 +109,9 @@ public class EmbeddingGenerator
         }
     }
 
-    public String getEmbedder()
+    public String getBackend()
     {
-        return embedder;
+        return backend;
     }
 
     public String getModel()

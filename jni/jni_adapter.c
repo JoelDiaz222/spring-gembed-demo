@@ -38,10 +38,10 @@ typedef struct {
 } EmbeddingBatch;
 
 // Forward declarations for Rust C FFI functions
-extern int validate_embedder(const char *name);
-extern int validate_embedding_model(int embedder_id, const char *model, int input_type);
+extern int validate_backend(const char *name);
+extern int validate_model(int backend_id, const char *model, int input_type);
 extern int generate_embeddings(
-    int embedder_id,
+    int backend_id,
     int model_id,
     const InputData *input_data,
     EmbeddingBatch *out_batch
@@ -126,28 +126,28 @@ Java_com_example_embeddings_model_NativeMemory_readFloatArray(
 
 // Embedding Generation Functions (New API)
 JNIEXPORT jint JNICALL
-Java_com_example_embeddings_service_NativeBridge_validateEmbedder(
-    JNIEnv *env, jclass cls, jstring embedder)
+Java_com_example_embeddings_service_NativeBridge_validateBackend(
+    JNIEnv *env, jclass cls, jstring backend)
 {
-    if (embedder == NULL) {
+    if (backend == NULL) {
         return -1;
     }
 
-    const char *embedder_str = (*env)->GetStringUTFChars(env, embedder, NULL);
-    if (embedder_str == NULL) {
+    const char *backend_str = (*env)->GetStringUTFChars(env, backend, NULL);
+    if (backend_str == NULL) {
         return -1;
     }
 
-    int result = validate_embedder(embedder_str);
+    int result = validate_backend(backend_str);
 
-    (*env)->ReleaseStringUTFChars(env, embedder, embedder_str);
+    (*env)->ReleaseStringUTFChars(env, backend, backend_str);
 
     return (jint)result;
 }
 
 JNIEXPORT jint JNICALL
-Java_com_example_embeddings_service_NativeBridge_validateEmbeddingModel(
-    JNIEnv *env, jclass cls, jint methodId, jstring model)
+Java_com_example_embeddings_service_NativeBridge_validateModel(
+    JNIEnv *env, jclass cls, jint backendId, jstring model)
 {
     if (model == NULL) {
         return -1;
@@ -159,7 +159,7 @@ Java_com_example_embeddings_service_NativeBridge_validateEmbeddingModel(
     }
 
     // Validate for text input type
-    int result = validate_embedding_model((int)methodId, model_str, INPUT_TYPE_TEXT);
+    int result = validate_model((int)backendId, model_str, INPUT_TYPE_TEXT);
 
     (*env)->ReleaseStringUTFChars(env, model, model_str);
 
@@ -169,7 +169,7 @@ Java_com_example_embeddings_service_NativeBridge_validateEmbeddingModel(
 JNIEXPORT jint JNICALL
 Java_com_example_embeddings_service_NativeBridge_generateEmbeddingsFromTexts(
     JNIEnv *env, jclass cls,
-    jint methodId, jint modelId,
+    jint backendId, jint modelId,
     jlong inputsPtr, jint nInputs,
     jlong outBatchPtr)
 {
@@ -187,7 +187,7 @@ Java_com_example_embeddings_service_NativeBridge_generateEmbeddingsFromTexts(
 
     // Call the unified generate_embeddings function
     int result = generate_embeddings(
-        (int)methodId,
+        (int)backendId,
         (int)modelId,
         &input_data,
         (EmbeddingBatch *)outBatchPtr
