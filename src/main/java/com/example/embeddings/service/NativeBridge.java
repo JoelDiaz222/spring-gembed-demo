@@ -11,7 +11,7 @@ public class NativeBridge
     }
 
     /**
-     * Validate an backend by name
+     * Validate a backend by name
      *
      * @param backend The backend name (e.g., "embed_anything", "fastembed")
      * @return Backend ID (>= 0) if valid, negative value if invalid
@@ -25,7 +25,7 @@ public class NativeBridge
      * This Java wrapper validates for INPUT_TYPE_TEXT (0) by default.
      *
      * @param backendId The backend ID returned by validateBackend
-     * @param model      The model name/identifier
+     * @param model     The model name/identifier
      * @return Model ID (>= 0) if valid, negative value if invalid
      */
     public static native int validateModel(int backendId, String model);
@@ -33,7 +33,7 @@ public class NativeBridge
     /**
      * Generate embeddings from text inputs
      *
-     * @param backendId  The backend ID
+     * @param backendId   The backend ID
      * @param modelId     The model ID
      * @param inputsPtr   Pointer to StringSlice array
      * @param nInputs     Number of input texts

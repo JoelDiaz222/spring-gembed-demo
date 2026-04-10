@@ -34,7 +34,7 @@ public class EmbeddingController
     @PostMapping
     public Map<String, Object> generateEmbeddings(@RequestBody EmbeddingRequest request)
     {
-        float[][] embeddings = embeddingService.embed(request.backend(), request.model(), request.texts());
+        final float[][] embeddings = embeddingService.embed(request.backend(), request.model(), request.texts());
 
         return Map.of(
                 "backend", request.backend(),
@@ -43,6 +43,5 @@ public class EmbeddingController
         );
     }
 
-    // Using a record for the request body
     public record EmbeddingRequest(String backend, String model, List<String> texts) {}
 }

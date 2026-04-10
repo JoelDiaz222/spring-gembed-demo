@@ -20,7 +20,7 @@ public class EmbeddingGenerator
      * Create an embedding generator with specified backend and model
      *
      * @param backend The backend name (e.g., "embed_anything", "fastembed")
-     * @param model    The model name/identifier
+     * @param model   The model name/identifier
      * @throws IllegalArgumentException if backend or model is invalid
      */
     public EmbeddingGenerator(String backend, String model)
@@ -58,9 +58,9 @@ public class EmbeddingGenerator
         final int nInputs = texts.size();
 
         // Allocate native memory for StringSlice array and text data
-        try (NativeMemory memory = NativeMemory.fromTexts(texts))
+        try (NativeMemory nativeMemory = NativeMemory.fromTexts(texts))
         {
-            // Allocate memory for output batch
+            // Allocate nativeMemory for output batch
             final long outBatchPtr = NativeMemory.allocateEmbeddingBatch();
 
             try
@@ -69,7 +69,7 @@ public class EmbeddingGenerator
                 final int result = NativeBridge.generateEmbeddingsFromTexts(
                         backendId,
                         modelId,
-                        memory.getStringSlicesPtr(),
+                        nativeMemory.getStringSlicesPtr(),
                         nInputs,
                         outBatchPtr
                 );
