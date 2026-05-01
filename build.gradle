@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'org.springframework.boot' version '4.0.3'
     id 'io.spring.dependency-management' version '1.1.7'
 }
@@ -39,6 +40,11 @@ tasks.named('test') {
     useJUnitPlatform()
     jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
     systemProperty 'java.library.path', 'jni'
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = '0.8.14'
 }
 
 def osName = System.getProperty("os.name").toLowerCase()
